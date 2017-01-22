@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace FChatLib.Entities.Commands
 {
-    class JoinChannel : BaseCommand
+    class CreateChannel : BaseCommand
     {
         public string channel;
 
-        public JoinChannel()
+        public CreateChannel()
         {
-            this.Type = "JCH";
+            Type = "CCR";
         }
     }
 }

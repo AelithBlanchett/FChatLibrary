@@ -10,7 +10,7 @@ namespace FChatLib_tst
     {
         static void Main(string[] args)
         {
-            var bot = new FChatLib.Bot("", "", " ", "");
+            var bot = new FChatLib.Bot();
             bot.Connect();
             Console.ReadLine();
         }

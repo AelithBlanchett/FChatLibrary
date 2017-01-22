@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using FChatLib.Entities;
 using FChatLib.Entities.Commands;
 using System.Collections.Specialized;
+using FChatLib.Entities.EventHandlers;
 
 namespace FChatLib
 {
@@ -22,22 +23,23 @@ namespace FChatLib
         private string _botCharacterName;
         private string _administratorCharacterName;
         private bool _debug;
-        private bool _reconnectOnError;
         private int _delayBetweenEachReconnection;
         private CancellationToken _cancellationToken;
         private WebSocket wsClient;
-        private IWebSocketEventHandler _wsEventHandler;
 
-        public IWebSocketEventHandler WSEventHandler
+        //plugin-name is the key, event handler is the value
+        private Dictionary<string, IWebSocketEventHandler> _wsEventHandlers;
+
+        public Dictionary<string, IWebSocketEventHandler> WSEventHandlers
         {
             get
             {
-                return _wsEventHandler;
+                return _wsEventHandlers;
             }
 
             set
             {
-                _wsEventHandler = value;
+                _wsEventHandlers = value;
             }
         }
 
@@ -48,77 +50,18 @@ namespace FChatLib
             _botCharacterName = botCharacterName;
             _administratorCharacterName = administratorCharacterName;
             _debug = false;
-            _reconnectOnError = true;
             _delayBetweenEachReconnection = 4000;
         }
 
-        public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, bool reconnectOnError, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)
+        public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)
         {
             _debug = debug;
-            _reconnectOnError = reconnectOnError;
             _delayBetweenEachReconnection = delayBetweenEachReconnection;
         }
 
-        public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, bool reconnectOnError, int delayBetweenEachReconnection, IWebSocketEventHandler eventHandler) : this(username, password, botCharacterName, administratorCharacterName, debug, reconnectOnError, delayBetweenEachReconnection)
+        public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection, string pluginName, IWebSocketEventHandler eventHandler) : this(username, password, botCharacterName, administratorCharacterName, debug, delayBetweenEachReconnection)
         {
-            _wsEventHandler = eventHandler;
-        }
-
-        public void Connect()
-        {
-            var ticket = GetTicket();
-
-
-            int port = 9722;
-            if (_debug == true)
-            {
-                port = 8722;
-            }
-
-            wsClient = new WebSocket($"ws://chat.f-list.net:{port}");
-
-            var handler = new WebSocketEventHandler();
-
-            wsClient.OnOpen += (sender, e) =>
-            {
-                var message = new Identification()
-                {
-                    account = _username,
-                    botVersion = "1.0.0",
-                    character = _botCharacterName,
-                    ticket = ticket,
-                    method = "ticket",
-                    botCreator = _username
-                };
-                wsClient.Send(message.ToString());
-            };
-
-            wsClient.OnOpen += handler.OnOpen;
-            wsClient.OnClose += handler.OnClose;
-            wsClient.OnMessage += handler.OnMessage;
-            wsClient.OnError += handler.OnError;
-
-            if (_reconnectOnError)
-            {
-                wsClient.OnError += (sender, e) =>
-                {
-                    Console.WriteLine("WebSocket connection closed. Retyring again in 4000ms.");
-                    System.Threading.Thread.Sleep(_delayBetweenEachReconnection);
-                    Connect();
-                };
-            }
-
-            wsClient.Connect();
-        }
-
-        public void Disconnect()
-        {
-            wsClient.Close(CloseStatusCode.Normal);
-        }
-
-        public void JoinChannel(string channel)
-        {
-
+            AddPlugin(pluginName, eventHandler);
         }
 
         private string GetTicket()
@@ -147,5 +90,108 @@ namespace FChatLib
             }
             return jsonObject.ticket;
         }
+
+        // Connection / Disconnection
+
+        public void Connect()
+        {
+            //Token to authenticate on F-list
+            var ticket = GetTicket();
+
+            int port = 9722;
+            if (_debug == true)
+            {
+                port = 8722;
+            }
+
+            wsClient = new WebSocket($"ws://chat.f-list.net:{port}");
+
+            var identificationInfo = new Identification()
+            {
+                account = _username,
+                botVersion = "1.0.0",
+                character = _botCharacterName,
+                ticket = ticket,
+                method = "ticket",
+                botCreator = _username
+            };
+
+            WSEventHandlers.Add("FChatLib.Default", new DefaultWebSocketEventHandler(wsClient, identificationInfo, _delayBetweenEachReconnection));
+
+            wsClient.Connect();
+        }
+
+        public void Disconnect()
+        {
+            wsClient.Close(CloseStatusCode.Normal);
+        }
+
+
+
+        //Plugin related
+
+        public void AddPlugin(string pluginName, IWebSocketEventHandler eventHandler)
+        {
+            RemovePlugin(pluginName);
+            WSEventHandlers.Add(pluginName, eventHandler);
+        }
+
+        public void RemovePlugin(string pluginName)
+        {
+            if (WSEventHandlers.ContainsKey(pluginName))
+            {
+                WSEventHandlers.Remove(pluginName);
+            }
+        }
+
+        
+
+
+
+        // Channel related 
+
+        public void JoinChannel(string channel)
+        {
+            wsClient.Send(new JoinChannel()
+            {
+                channel = channel
+            }.ToString());
+        }
+
+        public void CreateChannel(string channelTitle)
+        {
+            wsClient.Send(new CreateChannel()
+            {
+                channel = channelTitle
+            }.ToString());
+        }
+
+
+        // Permissions / Administration
+
+        public bool IsUserAdmin(string character, string channel)
+        {
+            return (this.IsUserOP(character, channel) || this.IsUserMaster(character));
+        }
+
+        public bool IsUserOP(string character, string channel)
+        {
+            return true;
+        }
+
+        public bool IsUserMaster(string character)
+        {
+            return true;
+        }
+
+        public void KickUser(string character, string channel)
+        {
+            wsClient.Send(new KickFromChannel()
+            {
+                character = character,
+                channel = channel
+            }.ToString());
+        }
+
     }
 }
