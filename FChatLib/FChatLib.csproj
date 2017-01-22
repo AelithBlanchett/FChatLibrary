@@ -50,8 +50,10 @@
   <ItemGroup>
     <Compile Include="Bot.cs" />
     <Compile Include="Entities\GetTicketResponse.cs" />
-    <Compile Include="Entities\Messages\Identification.cs" />
-    <Compile Include="Entities\Messages\Message.cs" />
+    <Compile Include="Entities\Commands\Identification.cs" />
+    <Compile Include="Entities\Commands\IBaseCommand.cs" />
+    <Compile Include="Entities\Commands\JoinChannel.cs" />
+    <Compile Include="Entities\Commands\BaseCommand.cs" />
     <Compile Include="IBot.cs" />
     <Compile Include="IWebSocketEventHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

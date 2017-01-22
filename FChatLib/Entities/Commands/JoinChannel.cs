@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FChatLib.Entities.Messages
+namespace FChatLib.Entities.Commands
 {
-    public class Message
+    class JoinChannel : BaseCommand
     {
-        public string type;
-        public string data;
+
     }
 }

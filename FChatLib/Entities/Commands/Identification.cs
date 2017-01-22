@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FChatLib.Entities.Messages
+namespace FChatLib.Entities.Commands
 {
-    public class Identification
+    public class Identification : BaseCommand
     {
-        //{ "method": "ticket", "account": parent.config.username, "ticket": ticket, "character": parent.config.character, "cname": parent.config.cname, "cversion": parent.config.cversion };
         public string method;
         public string account;
         public string ticket;
@@ -18,5 +17,10 @@ namespace FChatLib.Entities.Messages
         public string botCreator;
         [JsonProperty("cversion")]
         public string botVersion;
+
+        public Identification()
+        {
+            this.Type = "IDN";
+        }
     }
 }

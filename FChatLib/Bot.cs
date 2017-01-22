@@ -9,7 +9,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using FChatLib.Entities;
-using FChatLib.Entities.Messages;
+using FChatLib.Entities.Commands;
 using System.Collections.Specialized;
 
 namespace FChatLib
@@ -81,7 +81,7 @@ namespace FChatLib
 
             wsClient.OnOpen += (sender, e) =>
             {
-                var jsonData = JsonConvert.SerializeObject(new Identification()
+                var message = new Identification()
                 {
                     account = _username,
                     botVersion = "1.0.0",
@@ -89,8 +89,8 @@ namespace FChatLib
                     ticket = ticket,
                     method = "ticket",
                     botCreator = _username
-                });
-                wsClient.Send($"IDN {jsonData}");
+                };
+                wsClient.Send(message.ToString());
             };
 
             wsClient.OnOpen += handler.OnOpen;
@@ -116,6 +116,11 @@ namespace FChatLib
             wsClient.Close(CloseStatusCode.Normal);
         }
 
+        public void JoinChannel(string channel)
+        {
+
+        }
+
         private string GetTicket()
         {
             var jsonData = JsonConvert.SerializeObject(new
@@ -135,6 +140,11 @@ namespace FChatLib
             }
 
             var jsonObject = JsonConvert.DeserializeObject<GetTicketResponse>(jsonResult);
+
+            if (string.IsNullOrEmpty(jsonObject.ticket))
+            {
+                throw new Exception("Couldn't get authentication info from F-List API. Please restart.");
+            }
             return jsonObject.ticket;
         }
     }
