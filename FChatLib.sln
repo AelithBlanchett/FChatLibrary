@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.25914.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FChatLib", "FChatLib\FChatLib.csproj", "{5AE49936-2F5A-4735-9837-5719981BAEE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FChatLib_tst", "FChatLib_tst\FChatLib_tst.csproj", "{F9770DF5-F322-409B-98B9-D6E98124CBDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{5AE49936-2F5A-4735-9837-5719981BAEE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AE49936-2F5A-4735-9837-5719981BAEE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AE49936-2F5A-4735-9837-5719981BAEE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9770DF5-F322-409B-98B9-D6E98124CBDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9770DF5-F322-409B-98B9-D6E98124CBDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9770DF5-F322-409B-98B9-D6E98124CBDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9770DF5-F322-409B-98B9-D6E98124CBDE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
