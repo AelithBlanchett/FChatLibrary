@@ -16,6 +16,7 @@ using FChatLib.Entities.EventHandlers.WebSocket;
 using System.Reflection;
 using System.Security.Policy;
 using FChatLib.Entities.Plugin;
+using NuGet;
 
 namespace FChatLib
 {
@@ -144,6 +145,40 @@ namespace FChatLib
             if (WSEventHandlers.ContainsKey(pluginName))
             {
                 WSEventHandlers.Remove(pluginName);
+            }
+        }
+
+        public void InstallNuGetPlugins(string pluginName)
+        {
+            var repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
+
+            var packageManager = new PackageManager(repo, System.Environment.CurrentDirectory);
+            //packageManager.PackageInstalled += PackageManager_PackageInstalled;
+
+
+            var package = repo.FindPackage(pluginName);
+            if (package != null)
+            {
+                packageManager.InstallPackage(package, false, true);
+            }
+        }
+
+        public void UpdateNuGetPlugins(IEnumerable<NuGet.IPackageName> pluginNames)
+        {
+            var repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
+
+            var packageManager = new PackageManager(repo, System.Environment.CurrentDirectory);
+            //packageManager.PackageInstalled += PackageManager_PackageInstalled;
+
+
+            var packagesToUpdate = repo.GetUpdates(pluginNames, true, true);
+            if (packagesToUpdate.Any())
+            {
+                foreach (var package in packagesToUpdate)
+                {
+                    Console.WriteLine($"Updating package {package.GetFullName()} to version {package.Version}");
+                    packageManager.UpdatePackage(package, true, true);
+                }
             }
         }
 
