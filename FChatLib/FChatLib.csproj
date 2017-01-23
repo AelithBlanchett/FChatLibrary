@@ -62,6 +62,8 @@
     <Compile Include="Entities\Events\IBaseEvent.cs" />
     <Compile Include="Entities\Events\Client\JoinChannel.cs" />
     <Compile Include="Entities\Events\BaseEvent.cs" />
+    <Compile Include="Entities\Plugin\BasePlugin.cs" />
+    <Compile Include="Entities\Plugin\Commands\BaseCommand.cs" />
     <Compile Include="Entities\Plugin\Commands\ICommand.cs" />
     <Compile Include="Entities\Plugin\IPlugin.cs" />
     <Compile Include="IBot.cs" />

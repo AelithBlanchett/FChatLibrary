@@ -167,7 +167,7 @@ namespace FChatLib
                 Assembly assembly = value.GetAssembly($"{System.Environment.CurrentDirectory}\\{pluginName}.dll");
                 foreach (var typ in assembly.GetTypes())
                 {
-                    var loadedPlugin = domain.CreateInstanceAndUnwrap(typ.Assembly.FullName, typ.FullName);
+                    var loadedPlugin = domain.CreateInstanceAndUnwrap(typ.Assembly.FullName, typ.FullName, false, BindingFlags.Default, null, new object[] { this }, System.Globalization.CultureInfo.CurrentCulture, null);
                     if (typeof(IPlugin).IsAssignableFrom(typ) && loadedPlugin.GetType().GetMethod("OnPluginLoad") != null && loadedPlugin.GetType().GetMethod("OnPluginUnload") != null)
                     {
                         loadedPlugins.Add(loadedPlugin);
