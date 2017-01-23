@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace FChatLib
+namespace FChatLib.Entities.EventHandlers.WebSocket
 {
     public abstract class BaseWebSocketEventHandler : IWebSocketEventHandler
     {
-        private WebSocket _webSocketClient;
+        private WebSocketSharp.WebSocket _webSocketClient;
 
-        public WebSocket WebSocketClient
+        public WebSocketSharp.WebSocket WebSocketClient
         {
             get
             {
@@ -24,7 +24,7 @@ namespace FChatLib
             }
         }
 
-        public BaseWebSocketEventHandler(WebSocket wsClient)
+        public BaseWebSocketEventHandler(WebSocketSharp.WebSocket wsClient)
         {
             _webSocketClient = wsClient;
             _webSocketClient.OnOpen += this.OnOpen;

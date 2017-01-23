@@ -9,9 +9,13 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using FChatLib.Entities;
-using FChatLib.Entities.Commands;
+using FChatLib.Entities.Events.Client;
 using System.Collections.Specialized;
 using FChatLib.Entities.EventHandlers;
+using FChatLib.Entities.EventHandlers.WebSocket;
+using System.Reflection;
+using System.Security.Policy;
+using FChatLib.Entities.Plugin;
 
 namespace FChatLib
 {
@@ -24,7 +28,6 @@ namespace FChatLib
         private string _administratorCharacterName;
         private bool _debug;
         private int _delayBetweenEachReconnection;
-        private CancellationToken _cancellationToken;
         private WebSocket wsClient;
 
         //plugin-name is the key, event handler is the value
@@ -51,6 +54,7 @@ namespace FChatLib
             _administratorCharacterName = administratorCharacterName;
             _debug = false;
             _delayBetweenEachReconnection = 4000;
+            WSEventHandlers = new Dictionary<string, IWebSocketEventHandler>();
         }
 
         public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)
@@ -127,7 +131,6 @@ namespace FChatLib
         }
 
 
-
         //Plugin related
 
         public void AddPlugin(string pluginName, IWebSocketEventHandler eventHandler)
@@ -144,7 +147,44 @@ namespace FChatLib
             }
         }
 
-        
+        public List<object> LoadPluginsFromAssembly(string pluginName)
+        {
+            List<object> loadedPlugins = new List<object>();
+
+            try
+            {
+                AppDomainSetup domaininfo = new AppDomainSetup();
+                domaininfo.ApplicationBase = System.Environment.CurrentDirectory;
+                Evidence adevidence = AppDomain.CurrentDomain.Evidence;
+                AppDomain domain = AppDomain.CreateDomain($"AD-{pluginName}", adevidence, domaininfo);
+
+                Type type = typeof(TypeProxy);
+                var value = (TypeProxy)domain.CreateInstanceAndUnwrap(
+                    type.Assembly.FullName,
+                    type.FullName);
+
+
+                Assembly assembly = value.GetAssembly($"{System.Environment.CurrentDirectory}\\{pluginName}.dll");
+                foreach (var typ in assembly.GetTypes())
+                {
+                    var loadedPlugin = domain.CreateInstanceAndUnwrap(typ.Assembly.FullName, typ.FullName);
+                    if (typeof(IPlugin).IsAssignableFrom(typ) && loadedPlugin.GetType().GetMethod("OnPluginLoad") != null && loadedPlugin.GetType().GetMethod("OnPluginUnload") != null)
+                    {
+                        loadedPlugins.Add(loadedPlugin);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("failed to load plugin {0}", pluginName);
+                Console.WriteLine(ex.ToString());
+            }
+
+            return loadedPlugins;
+
+        }
+
+
 
 
 

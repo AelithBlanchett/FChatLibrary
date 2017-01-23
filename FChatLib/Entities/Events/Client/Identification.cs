@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FChatLib.Entities.Commands
+namespace FChatLib.Entities.Events.Client
 {
-    public class Identification : BaseCommand
+    public class Identification : BaseEvent
     {
         public string method;
         public string account;

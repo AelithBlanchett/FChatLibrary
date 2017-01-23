@@ -1,11 +1,11 @@
 ﻿using System;
 using WebSocketSharp;
 
-namespace FChatLib
+namespace FChatLib.Entities.EventHandlers.WebSocket
 {
     public interface IWebSocketEventHandler
     {
-        WebSocket WebSocketClient { get; set; }
+        WebSocketSharp.WebSocket WebSocketClient { get; set; }
         void OnOpen(object sender, EventArgs e);
         void OnClose(object sender, CloseEventArgs e);
         void OnError(object sender, ErrorEventArgs e);

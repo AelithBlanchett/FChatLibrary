@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FChatLib.Entities.Commands
+namespace FChatLib.Entities.Events
 {
-    public abstract class BaseCommand : IBaseCommand
+    public abstract class BaseEvent : IBaseEvent
     {
         private string _type;
 

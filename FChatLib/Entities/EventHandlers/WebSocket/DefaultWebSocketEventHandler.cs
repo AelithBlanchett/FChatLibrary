@@ -1,4 +1,4 @@
-﻿using FChatLib.Entities.Commands;
+﻿using FChatLib.Entities.Events.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace FChatLib.Entities.EventHandlers
+namespace FChatLib.Entities.EventHandlers.WebSocket
 {
     class DefaultWebSocketEventHandler : BaseWebSocketEventHandler
     {
@@ -14,7 +14,7 @@ namespace FChatLib.Entities.EventHandlers
         public int DelayBetweenEachReconnection;
         private Identification _identificationInfo;
 
-        public DefaultWebSocketEventHandler(WebSocket wsClient, Identification identificationInfo, int delayBetweenEachReconnection) : base(wsClient)
+        public DefaultWebSocketEventHandler(WebSocketSharp.WebSocket wsClient, Identification identificationInfo, int delayBetweenEachReconnection) : base(wsClient)
         {
             delayBetweenEachReconnection = DelayBetweenEachReconnection;
             _identificationInfo = identificationInfo;
@@ -22,7 +22,7 @@ namespace FChatLib.Entities.EventHandlers
 
         public override void OnClose(object sender, CloseEventArgs e)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"Closed connection. Code:  {e.Code} Reason: {e.Reason}");
         }
 
         public override void OnError(object sender, ErrorEventArgs e)
@@ -34,7 +34,7 @@ namespace FChatLib.Entities.EventHandlers
 
         public override void OnMessage(object sender, MessageEventArgs e)
         {
-            throw new NotImplementedException();
+            Console.WriteLine(e.Data);
         }
 
         public override void OnOpen(object sender, EventArgs e)

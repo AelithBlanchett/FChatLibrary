@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AppDomainToolkit, Version=1.0.4.1, Culture=neutral, PublicKeyToken=f2fc7ab5180cf5c4, processorArchitecture=MSIL">
+      <HintPath>..\packages\AppDomainToolkit.1.0.4.3\lib\net\AppDomainToolkit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -49,23 +53,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
-    <Compile Include="Entities\Commands\CreateChannel.cs" />
-    <Compile Include="Entities\Commands\KickFromChannel.cs" />
-    <Compile Include="Entities\Commands\SetStatus.cs" />
-    <Compile Include="Entities\EventHandlers\DefaultWebSocketEventHandler.cs" />
+    <Compile Include="Entities\Events\Client\CreateChannel.cs" />
+    <Compile Include="Entities\Events\Client\KickFromChannel.cs" />
+    <Compile Include="Entities\Events\Client\SetStatus.cs" />
+    <Compile Include="Entities\EventHandlers\WebSocket\DefaultWebSocketEventHandler.cs" />
     <Compile Include="Entities\GetTicketResponse.cs" />
-    <Compile Include="Entities\Commands\Identification.cs" />
-    <Compile Include="Entities\Commands\IBaseCommand.cs" />
-    <Compile Include="Entities\Commands\JoinChannel.cs" />
-    <Compile Include="Entities\Commands\BaseCommand.cs" />
+    <Compile Include="Entities\Events\Client\Identification.cs" />
+    <Compile Include="Entities\Events\IBaseEvent.cs" />
+    <Compile Include="Entities\Events\Client\JoinChannel.cs" />
+    <Compile Include="Entities\Events\BaseEvent.cs" />
+    <Compile Include="Entities\Plugin\Commands\ICommand.cs" />
+    <Compile Include="Entities\Plugin\IPlugin.cs" />
     <Compile Include="IBot.cs" />
-    <Compile Include="Entities\EventHandlers\IWebSocketEventHandler.cs" />
+    <Compile Include="Entities\EventHandlers\WebSocket\IWebSocketEventHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Entities\EventHandlers\BaseWebSocketEventHandler.cs" />
+    <Compile Include="Entities\EventHandlers\WebSocket\BaseWebSocketEventHandler.cs" />
+    <Compile Include="TypeProxy.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Entities\Events\Server\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

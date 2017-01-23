@@ -1,6 +1,6 @@
-﻿namespace FChatLib.Entities.Commands
+﻿namespace FChatLib.Entities.Events
 {
-    public interface IBaseCommand
+    public interface IBaseEvent
     {
         string Data { get; }
         string Type { get; set; }

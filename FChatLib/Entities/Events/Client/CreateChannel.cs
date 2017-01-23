@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FChatLib.Entities.Commands
+namespace FChatLib.Entities.Events.Client
 {
-    class JoinChannel : BaseCommand
+    class CreateChannel : BaseEvent
     {
         public string channel;
 
-        public JoinChannel()
+        public CreateChannel()
         {
-            this.Type = "JCH";
+            Type = "CCR";
         }
     }
 }
