@@ -61,19 +61,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bot.cs" />
+    <Compile Include="Entities\EventHandlers\FChatEvents\DefaultFChatEventHandler.cs" />
+    <Compile Include="Entities\EventHandlers\ReceivedEventEventArgs.cs" />
+    <Compile Include="Entities\EventHandlers\ReceivedPluginCommandEventArgs.cs" />
     <Compile Include="Entities\Events\Client\CreateChannel.cs" />
     <Compile Include="Entities\Events\Client\KickFromChannel.cs" />
+    <Compile Include="Entities\Events\Client\Message.cs" />
     <Compile Include="Entities\Events\Client\SetStatus.cs" />
     <Compile Include="Entities\EventHandlers\WebSocket\DefaultWebSocketEventHandler.cs" />
+    <Compile Include="Entities\Events\IBaseEvent.cs" />
+    <Compile Include="Entities\Events\Server\Identification.cs" />
+    <Compile Include="Entities\Events\Server\Message.cs" />
     <Compile Include="Entities\GetTicketResponse.cs" />
     <Compile Include="Entities\Events\Client\Identification.cs" />
-    <Compile Include="Entities\Events\IBaseEvent.cs" />
     <Compile Include="Entities\Events\Client\JoinChannel.cs" />
     <Compile Include="Entities\Events\BaseEvent.cs" />
     <Compile Include="Entities\Plugin\BasePlugin.cs" />
     <Compile Include="Entities\Plugin\Commands\BaseCommand.cs" />
     <Compile Include="Entities\Plugin\Commands\ICommand.cs" />
     <Compile Include="Entities\Plugin\IPlugin.cs" />
+    <Compile Include="Entities\Plugin\PluginSpawner.cs" />
+    <Compile Include="Entities\Plugin\PluginManager.cs" />
+    <Compile Include="Events.cs" />
     <Compile Include="IBot.cs" />
     <Compile Include="Entities\EventHandlers\WebSocket\IWebSocketEventHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -84,7 +93,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Entities\Events\Server\" />
+    <Folder Include="Entities\EventHandlers\Commands\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

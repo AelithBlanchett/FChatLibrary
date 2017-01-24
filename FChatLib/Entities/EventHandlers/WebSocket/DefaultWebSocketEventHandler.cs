@@ -1,4 +1,5 @@
-﻿using FChatLib.Entities.Events.Client;
+﻿using FChatLib.Entities.EventHandlers.FChatEvents;
+using FChatLib.Entities.Events.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,7 @@ namespace FChatLib.Entities.EventHandlers.WebSocket
         public override void OnMessage(object sender, MessageEventArgs e)
         {
             Console.WriteLine(e.Data);
+            DefaultFChatEventHandler.DetectEvent(e.Data);
         }
 
         public override void OnOpen(object sender, EventArgs e)

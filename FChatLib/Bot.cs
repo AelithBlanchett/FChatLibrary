@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Security.Policy;
 using FChatLib.Entities.Plugin;
 using NuGet;
+using FChatLib.Entities.EventHandlers.FChatEvents;
 
 namespace FChatLib
 {
@@ -47,6 +48,10 @@ namespace FChatLib
             }
         }
 
+        public Dictionary<string, IPlugin> LoadedPlugins;
+
+        public Events Events;
+
         public Bot(string username, string password, string botCharacterName, string administratorCharacterName)
         {
             _username = username;
@@ -56,17 +61,13 @@ namespace FChatLib
             _debug = false;
             _delayBetweenEachReconnection = 4000;
             WSEventHandlers = new Dictionary<string, IWebSocketEventHandler>();
+            Events = new Events();
         }
 
         public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)
         {
             _debug = debug;
             _delayBetweenEachReconnection = delayBetweenEachReconnection;
-        }
-
-        public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection, string pluginName, IWebSocketEventHandler eventHandler) : this(username, password, botCharacterName, administratorCharacterName, debug, delayBetweenEachReconnection)
-        {
-            AddPlugin(pluginName, eventHandler);
         }
 
         private string GetTicket()
@@ -132,92 +133,7 @@ namespace FChatLib
         }
 
 
-        //Plugin related
-
-        public void AddPlugin(string pluginName, IWebSocketEventHandler eventHandler)
-        {
-            RemovePlugin(pluginName);
-            WSEventHandlers.Add(pluginName, eventHandler);
-        }
-
-        public void RemovePlugin(string pluginName)
-        {
-            if (WSEventHandlers.ContainsKey(pluginName))
-            {
-                WSEventHandlers.Remove(pluginName);
-            }
-        }
-
-        public void InstallNuGetPlugins(string pluginName)
-        {
-            var repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
-
-            var packageManager = new PackageManager(repo, System.Environment.CurrentDirectory);
-            //packageManager.PackageInstalled += PackageManager_PackageInstalled;
-
-
-            var package = repo.FindPackage(pluginName);
-            if (package != null)
-            {
-                packageManager.InstallPackage(package, false, true);
-            }
-        }
-
-        public void UpdateNuGetPlugins(IEnumerable<NuGet.IPackageName> pluginNames)
-        {
-            var repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
-
-            var packageManager = new PackageManager(repo, System.Environment.CurrentDirectory);
-            //packageManager.PackageInstalled += PackageManager_PackageInstalled;
-
-
-            var packagesToUpdate = repo.GetUpdates(pluginNames, true, true);
-            if (packagesToUpdate.Any())
-            {
-                foreach (var package in packagesToUpdate)
-                {
-                    Console.WriteLine($"Updating package {package.GetFullName()} to version {package.Version}");
-                    packageManager.UpdatePackage(package, true, true);
-                }
-            }
-        }
-
-        public List<object> LoadPluginsFromAssembly(string pluginName)
-        {
-            List<object> loadedPlugins = new List<object>();
-
-            try
-            {
-                AppDomainSetup domaininfo = new AppDomainSetup();
-                domaininfo.ApplicationBase = System.Environment.CurrentDirectory;
-                Evidence adevidence = AppDomain.CurrentDomain.Evidence;
-                AppDomain domain = AppDomain.CreateDomain($"AD-{pluginName}", adevidence, domaininfo);
-
-                Type type = typeof(TypeProxy);
-                var value = (TypeProxy)domain.CreateInstanceAndUnwrap(
-                    type.Assembly.FullName,
-                    type.FullName);
-
-
-                Assembly assembly = value.GetAssembly($"{System.Environment.CurrentDirectory}\\{pluginName}.dll");
-                foreach (var typ in assembly.GetTypes())
-                {
-                    var loadedPlugin = domain.CreateInstanceAndUnwrap(typ.Assembly.FullName, typ.FullName, false, BindingFlags.Default, null, new object[] { this }, System.Globalization.CultureInfo.CurrentCulture, null);
-                    if (typeof(IPlugin).IsAssignableFrom(typ) && loadedPlugin.GetType().GetMethod("OnPluginLoad") != null && loadedPlugin.GetType().GetMethod("OnPluginUnload") != null)
-                    {
-                        loadedPlugins.Add(loadedPlugin);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("failed to load plugin {0}", pluginName);
-                Console.WriteLine(ex.ToString());
-            }
-
-            return loadedPlugins;
-
-        }
+        
 
 
 
@@ -238,6 +154,15 @@ namespace FChatLib
             wsClient.Send(new CreateChannel()
             {
                 channel = channelTitle
+            }.ToString());
+        }
+
+        public void SendMessage(string message, string channel)
+        {
+            wsClient.Send(new Message()
+            {
+                message = message,
+                channel = channel
             }.ToString());
         }
 

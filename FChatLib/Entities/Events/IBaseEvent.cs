@@ -4,5 +4,7 @@
     {
         string Data { get; }
         string Type { get; set; }
+
+        string ToString();
     }
 }

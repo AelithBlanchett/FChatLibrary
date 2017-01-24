@@ -28,7 +28,7 @@ namespace FChatLib.Entities.Plugin
             return (this.GetCommandList().SingleOrDefault(x => x == command) != null);
         }
 
-        public bool ExecuteCommand(string command)
+        public bool ExecuteCommand(string command, string[] args)
         {
             if (DoesCommandExist(command))
             {
@@ -42,9 +42,9 @@ namespace FChatLib.Entities.Plugin
                     ICommand instance = (ICommand)Activator.CreateInstance(typeToCreate, this);
                     instance.ExecuteCommand();
                 }
-                
+                return true;
             }
-            return (this.GetCommandList().SingleOrDefault(x => x == command) != null);
+            return false;
         }
     }
 }
