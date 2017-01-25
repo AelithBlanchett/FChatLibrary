@@ -9,10 +9,12 @@ using WebSocketSharp;
 
 namespace FChatLib.Entities.EventHandlers.WebSocket
 {
-    class DefaultWebSocketEventHandler : BaseWebSocketEventHandler
+    public class DefaultWebSocketEventHandler : BaseWebSocketEventHandler
     {
 
         public int DelayBetweenEachReconnection;
+
+        [NonSerialized]
         private Identification _identificationInfo;
 
         public DefaultWebSocketEventHandler(WebSocketSharp.WebSocket wsClient, Identification identificationInfo, int delayBetweenEachReconnection) : base(wsClient)

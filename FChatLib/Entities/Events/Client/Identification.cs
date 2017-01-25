@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace FChatLib.Entities.Events.Client
 {
+    [Serializable]
     public class Identification : BaseEvent
     {
         public string method;

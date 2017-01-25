@@ -1,26 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using WebSocketSharp;
 using System.Net;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using FChatLib.Entities;
 using FChatLib.Entities.Events.Client;
 using System.Collections.Specialized;
-using FChatLib.Entities.EventHandlers;
 using FChatLib.Entities.EventHandlers.WebSocket;
-using System.Reflection;
-using System.Security.Policy;
 using FChatLib.Entities.Plugin;
-using NuGet;
-using FChatLib.Entities.EventHandlers.FChatEvents;
 
 namespace FChatLib
 {
+    [Serializable]
     public class Bot : IBot
     {
 
@@ -30,9 +22,12 @@ namespace FChatLib
         private string _administratorCharacterName;
         private bool _debug;
         private int _delayBetweenEachReconnection;
+
+        [NonSerialized]
         private WebSocket wsClient;
 
         //plugin-name is the key, event handler is the value
+        [NonSerialized]
         private Dictionary<string, IWebSocketEventHandler> _wsEventHandlers;
 
         public Dictionary<string, IWebSocketEventHandler> WSEventHandlers
@@ -48,8 +43,10 @@ namespace FChatLib
             }
         }
 
-        public Dictionary<string, IPlugin> LoadedPlugins;
+        [NonSerialized]
+        public PluginManager Plugins;
 
+        [NonSerialized]
         public Events Events;
 
         public Bot(string username, string password, string botCharacterName, string administratorCharacterName)
@@ -62,6 +59,7 @@ namespace FChatLib
             _delayBetweenEachReconnection = 4000;
             WSEventHandlers = new Dictionary<string, IWebSocketEventHandler>();
             Events = new Events();
+            Plugins = new PluginManager(this);
         }
 
         public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)

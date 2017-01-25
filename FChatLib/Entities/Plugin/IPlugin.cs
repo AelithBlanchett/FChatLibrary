@@ -11,6 +11,6 @@ namespace FChatLib.Entities.Plugin
         string Name { get; }
         string Version { get; }
         IBot FChatClient { get; }
-        IEnumerable<string> GetCommandList();
+        List<string> GetCommandList();
     }
 }

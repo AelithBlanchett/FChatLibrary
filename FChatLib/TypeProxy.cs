@@ -9,7 +9,8 @@ namespace FChatLib
         {
             try
             {
-                return Assembly.LoadFile(assemblyPath);
+                var assembly = Assembly.LoadFile(assemblyPath);
+                return assembly;
             }
             catch (Exception)
             {

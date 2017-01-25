@@ -32,7 +32,7 @@ namespace FChatLib.Entities.Plugin
         {
             if (LoadedPlugins.ContainsKey(e.Channel.ToLower()))
             {
-                foreach(var plugin in LoadedPlugins[e.Channel.ToLower()].Values)
+                foreach (var plugin in LoadedPlugins[e.Channel.ToLower()].Values)
                 {
                     plugin.ExecuteCommand(e.Command, e.Arguments);
                 }
@@ -46,7 +46,7 @@ namespace FChatLib.Entities.Plugin
 
             foreach (var pluginName in availablePlugins)
             {
-                LoadPluginsFromAssembly(pluginName.ToLower());
+                PluginSpawnersList.AddRange(LoadPluginsFromAssembly(pluginName.ToLower()));
             }
         }
 
@@ -58,12 +58,12 @@ namespace FChatLib.Entities.Plugin
             }
         }
 
-        public bool LoadPlugin(Bot myBot, string channel, string pluginName)
+        public bool LoadPlugin(string pluginName, string channel)
         {
-            var myPlugin = GetPluginInstance(pluginName.ToLower(), myBot);
+            var myPlugin = GetPluginInstance(pluginName.ToLower(), channel);
             var flag = false;
 
-            if(myPlugin != null)
+            if (myPlugin != null)
             {
                 CreatePluginManagerForChannelIfNotExistent(channel.ToLower());
 
@@ -94,7 +94,7 @@ namespace FChatLib.Entities.Plugin
             {
                 success = false;
             }
-            
+
             return success;
         }
 
@@ -114,14 +114,16 @@ namespace FChatLib.Entities.Plugin
             return success;
         }
 
-        public bool ReloadPluginGlobal(Bot myBot, string pluginName)
+        public bool ReloadPluginGlobal(string pluginName)
         {
-            var myPlugin = GetPluginInstance(pluginName.ToLower(), myBot);
             var flag = false;
 
-            if (myPlugin != null)
+
+            foreach (var channel in LoadedPlugins.Keys)
             {
-                foreach (var channel in LoadedPlugins.Keys)
+                var myPlugin = GetPluginInstance(pluginName.ToLower(), channel);
+
+                if (myPlugin != null)
                 {
                     if (LoadedPlugins[channel].ContainsKey(pluginName.ToLower()))
                     {
@@ -136,12 +138,13 @@ namespace FChatLib.Entities.Plugin
                 }
             }
 
+
             return flag;
         }
 
-        public bool ReloadPluginInChannel(Bot myBot, string channel, string pluginName)
+        public bool ReloadPluginInChannel(string pluginName, string channel)
         {
-            var myPlugin = GetPluginInstance(pluginName.ToLower(), myBot);
+            var myPlugin = GetPluginInstance(pluginName.ToLower(), channel);
 
             if (myPlugin != null)
             {
@@ -153,13 +156,13 @@ namespace FChatLib.Entities.Plugin
             return false;
         }
 
-        public BasePlugin GetPluginInstance(string pluginName, Bot myBot)
+        public BasePlugin GetPluginInstance(string pluginName, string channel)
         {
             foreach (var pluginSpawner in PluginSpawnersList)
             {
-                if(pluginSpawner.PluginName.ToLower() == pluginName.ToLower())
+                if (pluginSpawner.PluginName.ToLower() == pluginName.ToLower())
                 {
-                    var loadedPlugin = (BasePlugin)pluginSpawner.Domain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { myBot }, System.Globalization.CultureInfo.CurrentCulture, null);
+                    var loadedPlugin = (BasePlugin)pluginSpawner.Domain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { Bot, channel }, System.Globalization.CultureInfo.CurrentCulture, null);
                     return loadedPlugin;
                 }
             }
@@ -171,7 +174,7 @@ namespace FChatLib.Entities.Plugin
         {
             var unformattedPluginsList = System.IO.Directory.EnumerateFiles(Environment.CurrentDirectory, "FChatLib.Plugin.*.dll");
             var formattedPluginsList = unformattedPluginsList.ToList();
-            formattedPluginsList.Select(x => x.Replace("FChatLib.Plugin.", "").Replace(".dll", "").ToLower());
+            formattedPluginsList = formattedPluginsList.Select(x => x.Replace($"{Environment.CurrentDirectory}\\", "").Replace("FChatLib.Plugin.", "").Replace(".dll", "").ToLower()).ToList();
             return formattedPluginsList;
         }
 
@@ -234,11 +237,12 @@ namespace FChatLib.Entities.Plugin
 
                 foreach (var typ in assembly.GetTypes())
                 {
-                    
+
                     if (typeof(IPlugin).IsAssignableFrom(typ))
                     {
-                        var loadedPlugin = domain.CreateInstanceAndUnwrap(typ.Assembly.FullName, typ.FullName, false, BindingFlags.Default, null, new object[] { this }, System.Globalization.CultureInfo.CurrentCulture, null);
-                        if(loadedPlugin.GetType().GetMethod("OnPluginLoad") != null && loadedPlugin.GetType().GetMethod("OnPluginUnload") != null)
+                        var methodInfos = typ.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+                        //var loadedPlugin = domain.CreateInstanceAndUnwrap(typ.Assembly.FullName, typ.FullName, false, BindingFlags.Default, null, new object[] { null, "" }, System.Globalization.CultureInfo.CurrentCulture, null);
+                        if (methodInfos.FirstOrDefault(x => x.Name == "OnPluginLoad") != null && methodInfos.FirstOrDefault(x => x.Name == "OnPluginLoad") != null)
                         {
                             var pluginWrapper = new PluginSpawner()
                             {
@@ -252,7 +256,7 @@ namespace FChatLib.Entities.Plugin
                             };
                             loadedPlugins.Add(pluginWrapper);
                         }
-                        
+
                     }
                 }
             }

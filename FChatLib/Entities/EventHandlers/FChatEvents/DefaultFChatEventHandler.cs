@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FChatLib.Entities.EventHandlers.FChatEvents
 {
-    class DefaultFChatEventHandler
+    public class DefaultFChatEventHandler
     {
         public static Dictionary<string, Type> KnownEvents;
 
@@ -63,7 +63,7 @@ namespace FChatLib.Entities.EventHandlers.FChatEvents
 
                         ReceivedPluginCommandEvent?.Invoke(null, new ReceivedPluginCommandEventArgs()
                         {
-                            Command = command,
+                            Command = command.Remove(0, 1),
                             Arguments = arguments,
                             Channel = castedEvent.channel,
                             Character = castedEvent.character
