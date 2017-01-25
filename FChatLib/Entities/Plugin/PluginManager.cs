@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FChatLib.Entities.Plugin
 {
-    public class PluginManager
+    public class PluginManager : MarshalByRefObject
     {
 
         public List<PluginSpawner> PluginSpawnersList;
@@ -25,7 +25,6 @@ namespace FChatLib.Entities.Plugin
             Bot = myBot;
             LoadedPlugins = new Dictionary<string, Dictionary<string, BasePlugin>>();
             LoadAllAvailablePlugins();
-            Bot.Events.ReceivedPluginCommand += PassCommandToLoadedPlugins;
         }
 
         public void PassCommandToLoadedPlugins(object sender, ReceivedPluginCommandEventArgs e)
@@ -162,7 +161,7 @@ namespace FChatLib.Entities.Plugin
             {
                 if (pluginSpawner.PluginName.ToLower() == pluginName.ToLower())
                 {
-                    var loadedPlugin = (BasePlugin)pluginSpawner.Domain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { Bot, channel }, System.Globalization.CultureInfo.CurrentCulture, null);
+                    var loadedPlugin = (BasePlugin)AppDomain.CurrentDomain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { Bot, channel }, System.Globalization.CultureInfo.CurrentCulture, null);
                     return loadedPlugin;
                 }
             }
@@ -234,6 +233,7 @@ namespace FChatLib.Entities.Plugin
 
 
                 Assembly assembly = value.GetAssembly($"{System.Environment.CurrentDirectory}\\FChatLib.Plugin.{pluginName}.dll");
+                AppDomain.Unload(domain);
 
                 foreach (var typ in assembly.GetTypes())
                 {

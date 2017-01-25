@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FChatLib
 {
-    public class Events
+    public class Events : MarshalByRefObject
     {
         public event EventHandler ReceivedFChatEvent
         {

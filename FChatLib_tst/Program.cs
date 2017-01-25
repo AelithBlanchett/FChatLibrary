@@ -12,11 +12,17 @@ namespace FChatLib_tst
         {
             var bot = new FChatLib.Bot("dollydolly", "", "Xo Gisele", "Xo Gisele", true, 4000);
             bot.Connect();
+            bot.JoinChannel("ADH-0a0ce686af85181a4bdb");
             Console.ReadLine();
-            bot.JoinChannel("ADH-92a9bd86405869c8a768");
+            bot.Events.ReceivedPluginCommand += bot.Plugins.PassCommandToLoadedPlugins;
+            bot.Plugins.LoadPlugin("test", "ADH-0a0ce686af85181a4bdb");
             Console.ReadLine();
-            bot.Plugins.LoadPlugin("test", "ADH-92a9bd86405869c8a768");
-            Console.ReadLine();
+            //bot.Plugins.UnloadPlugin("test");
+            //Console.ReadLine();
+            //bot.Plugins.UpdateAllPlugins();
+            //Console.ReadLine();
+            //bot.Plugins.ReloadPluginInChannel("test", "ADH-92a9bd86405869c8a768");
+            //Console.ReadLine();
         }
     }
 }

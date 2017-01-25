@@ -9,6 +9,8 @@ using FChatLib.Entities.Events.Client;
 using System.Collections.Specialized;
 using FChatLib.Entities.EventHandlers.WebSocket;
 using FChatLib.Entities.Plugin;
+using System.Reflection;
+using System.Security.Policy;
 
 namespace FChatLib
 {
@@ -59,7 +61,26 @@ namespace FChatLib
             _delayBetweenEachReconnection = 4000;
             WSEventHandlers = new Dictionary<string, IWebSocketEventHandler>();
             Events = new Events();
-            Plugins = new PluginManager(this);
+
+            AppDomainSetup domaininfo = new AppDomainSetup()
+            {
+                ApplicationBase = Environment.CurrentDirectory,
+                ShadowCopyDirectories = Environment.CurrentDirectory,
+                ShadowCopyFiles = "true"
+            };
+            Evidence adevidence = AppDomain.CurrentDomain.Evidence;
+            AppDomain domain = AppDomain.CreateDomain($"AD-plugins", adevidence, domaininfo);
+
+            Type type = typeof(TypeProxy);
+            var value = (TypeProxy)domain.CreateInstanceAndUnwrap(
+                type.Assembly.FullName,
+                type.FullName);
+
+            var realType = typeof(PluginManager);
+            var loadedPlugin = domain.CreateInstanceAndUnwrap(realType.Assembly.FullName, realType.FullName, false, BindingFlags.Default, null, new object[] { this }, System.Globalization.CultureInfo.CurrentCulture, null);
+
+
+            Plugins = (PluginManager)loadedPlugin; //new PluginManager(this);
         }
 
         public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)
