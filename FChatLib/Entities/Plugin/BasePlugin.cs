@@ -19,30 +19,26 @@ namespace FChatLib.Entities.Plugin
         public abstract string Name { get; }
         public abstract string Version { get; }
         public string Channel { get; set; }
+
+        private Guid _pluginId;
+
+        public Guid PluginId
+        {
+            get
+            {
+                return _pluginId;
+            }
+
+            set
+            {
+                _pluginId = value;
+            }
+        }
+
+        
+
         private IModel _pubsubChannel;
 
-        public BasePlugin(string channel)
-        {
-            FChatClient = new RemoteBotController();
-            Channel = channel;
-
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            var connection = factory.CreateConnection();
-            _pubsubChannel = connection.CreateModel();
-            _pubsubChannel.QueueDeclare(queue: "FChatLib.Plugins.ToPlugins",
-                                     durable: false,
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
-            var consumer = new EventingBasicConsumer(_pubsubChannel);
-            consumer.Received += ReceivedCommand;
-            _pubsubChannel.BasicConsume(queue: "FChatLib.Plugins.ToPlugins",
-                                 noAck: true,
-                                 consumer: consumer);
-
-           
-            
-        }
 
         private void ReceivedCommand(object model, BasicDeliverEventArgs ea)
         {
@@ -53,7 +49,7 @@ namespace FChatLib.Entities.Plugin
                 var deserializedObject = JsonConvert.DeserializeObject<ReceivedPluginCommandEventArgs>(unparsedMessage);
                 Console.WriteLine($"received: {deserializedObject.Command} in {deserializedObject.Channel} from {deserializedObject.Character} with args: {deserializedObject.Arguments}");
                 Console.WriteLine(" BasePlugin Received {0}", deserializedObject);
-                if (deserializedObject.Channel == Channel)
+                if (deserializedObject.Channel.ToLower() == Channel.ToLower())
                 {
                     ExecuteCommand(deserializedObject.Command, deserializedObject.Arguments);
                 }
@@ -78,7 +74,7 @@ namespace FChatLib.Entities.Plugin
         public bool DoesCommandExist(string command)
         {
             var commandList = GetCommandList();
-            return (commandList.FirstOrDefault(x => x == command) != null);
+            return (commandList.FirstOrDefault(x => x.ToLower() == command.ToLower()) != null);
         }
 
         public bool ExecuteCommand(string command, string[] args)
@@ -91,7 +87,7 @@ namespace FChatLib.Entities.Plugin
                     var types = AppDomain.CurrentDomain.GetAssemblies()
                                 .SelectMany(s => s.GetTypes())
                                 .Where(p => typeof(ICommand).IsAssignableFrom(p));
-                    var typeToCreate = types.FirstOrDefault(x => x.Name == command);
+                    var typeToCreate = types.FirstOrDefault(x => x.Name.ToLower() == command.ToLower());
                     if (typeToCreate != null)
                     {
                         ICommand instance = (ICommand)Activator.CreateInstance(typeToCreate, this);
@@ -106,6 +102,33 @@ namespace FChatLib.Entities.Plugin
                 return true;
             }
             return false;
+        }
+
+        //Use this instead of the constructor
+        public void OnPluginLoad(string channel)
+        {
+            PluginId = System.Guid.NewGuid();
+            FChatClient = new RemoteBotController();
+            Channel = channel;
+
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var connection = factory.CreateConnection();
+            _pubsubChannel = connection.CreateModel();
+            _pubsubChannel.QueueDeclare(queue: "FChatLib.Plugins.ToPlugins",
+                                     durable: false,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+            var consumer = new EventingBasicConsumer(_pubsubChannel);
+            consumer.Received += ReceivedCommand;
+            _pubsubChannel.BasicConsume(queue: "FChatLib.Plugins.ToPlugins",
+                                 noAck: true,
+                                 consumer: consumer);
+        }
+
+        public void OnPluginUnload()
+        {
+            _pubsubChannel.Close();
         }
     }
 }

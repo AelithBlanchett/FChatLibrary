@@ -136,6 +136,8 @@ namespace FChatLib.Entities.Plugin
                 {
                     if (LoadedPlugins[channel].ContainsKey(pluginName.ToLower()))
                     {
+                        LoadedPlugins[channel][pluginName.ToLower()].OnPluginUnload();
+                        LoadedPlugins[channel][pluginName.ToLower()] = null;
                         LoadedPlugins[channel][pluginName.ToLower()] = myPlugin;
                         flag = true;
                     }
@@ -171,7 +173,8 @@ namespace FChatLib.Entities.Plugin
             {
                 if (pluginSpawner.PluginName.ToLower() == pluginName.ToLower())
                 {
-                    var loadedPlugin = (BasePlugin)AppDomain.CurrentDomain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { channel }, System.Globalization.CultureInfo.CurrentCulture, null);
+                    var loadedPlugin = (BasePlugin)AppDomain.CurrentDomain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { }, System.Globalization.CultureInfo.CurrentCulture, null);
+                    loadedPlugin.OnPluginLoad(channel);
                     return loadedPlugin;
                 }
             }

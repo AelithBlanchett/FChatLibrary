@@ -8,7 +8,6 @@ namespace FChatLib.Entities.Plugin.Commands
 {
     public interface ICommand
     {
-        BasePlugin MyPlugin { get; }
         string Description { get; }
         string ExampleUsage { get; }
         void ExecuteCommand();

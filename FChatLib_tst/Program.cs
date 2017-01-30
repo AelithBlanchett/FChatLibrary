@@ -13,11 +13,9 @@ namespace FChatLib_tst
             var bot = new FChatLib.Bot("dollydolly", "", "Xo Gisele", "Xo Gisele", true, 4000);
             bot.Connect();
             bot.JoinChannel("ADH-55bc847c492faf154406");
-            Console.ReadLine();
-            bot.Events.ReceivedPluginCommand += bot.Plugins.PassCommandToLoadedPlugins;
             bot.Plugins.LoadPlugin("test", "ADH-55bc847c492faf154406");
             Console.ReadLine();
-            bot.SendMessage("test", "ADH-55bc847c492faf154406");
+            bot.Plugins.ReloadPluginGlobal("test");
             Console.ReadLine();
             //bot.Plugins.UnloadPlugin("test");
             //Console.ReadLine();

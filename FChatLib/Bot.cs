@@ -150,6 +150,7 @@ namespace FChatLib
 
 
             Plugins = (PluginManager)loadedPlugin;
+            
         }
 
         private string GetTicket()
@@ -209,6 +210,8 @@ namespace FChatLib
             WsClient.Connect();
 
             InitializePluginManager();
+
+            Events.ReceivedPluginCommand += Plugins.PassCommandToLoadedPlugins;
         }
 
         public void Disconnect()
