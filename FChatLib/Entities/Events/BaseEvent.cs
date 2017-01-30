@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using FChatLib.Entities.Events.Client;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +20,20 @@ namespace FChatLib.Entities.Events
             {
                 return JsonConvert.SerializeObject(this);
             }
+            set
+            {
+                
+                dynamic baseEventSerialized = JsonConvert.DeserializeObject(value);
+                var fieldList = this.GetType().UnderlyingSystemType.GetFields();
+                foreach (var prop in fieldList)
+                {
+                    var receivedValue = baseEventSerialized[prop.Name];
+                    if (receivedValue != null)
+                    {
+                        prop.SetValue(this, receivedValue.ToString());
+                    }
+                }
+            }
         }
 
         [JsonIgnore]
@@ -36,6 +52,26 @@ namespace FChatLib.Entities.Events
         public override string ToString()
         {
             return $"{Type} {Data}";
+        }
+
+        public static object Deserialize(string content)
+        {
+            var contentType = content.Split(new char[] { ' ' }, 2);
+            object returnedCommand = null;
+            switch (contentType[0].Trim())
+            {
+                case "MSG":
+                    returnedCommand = new Message()
+                    {
+                        Type = "MSG",
+                        Data = contentType[1].Trim()
+                    };
+                    break;
+                default:
+                    break;
+            }
+
+            return returnedCommand;
         }
     }
 }

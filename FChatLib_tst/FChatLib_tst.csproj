@@ -49,9 +49,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FChatLib\FChatLib.csproj">
+    <ProjectReference Include="..\FChatLib\FChatLib_cpo.csproj">
       <Project>{5ae49936-2f5a-4735-9837-5719981baee3}</Project>
-      <Name>FChatLib</Name>
+      <Name>FChatLib_cpo</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

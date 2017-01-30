@@ -1,5 +1,6 @@
 ﻿using FChatLib.Entities.EventHandlers;
 using NuGet;
+using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Reflection;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace FChatLib.Entities.Plugin
 {
@@ -18,24 +20,32 @@ namespace FChatLib.Entities.Plugin
         //             key=channel     values=pluginName,pluginClass
         public Dictionary<string, Dictionary<string, BasePlugin>> LoadedPlugins;
 
-        public Bot Bot;
+        private IModel _pubsubChannel;
 
-        public PluginManager(Bot myBot)
+        public PluginManager()
         {
-            Bot = myBot;
             LoadedPlugins = new Dictionary<string, Dictionary<string, BasePlugin>>();
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var connection = factory.CreateConnection();
+            _pubsubChannel = connection.CreateModel();
+            _pubsubChannel.QueueDeclare(queue: "FChatLib.Plugins",
+                                     durable: false,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
             LoadAllAvailablePlugins();
         }
 
         public void PassCommandToLoadedPlugins(object sender, ReceivedPluginCommandEventArgs e)
         {
-            if (LoadedPlugins.ContainsKey(e.Channel.ToLower()))
-            {
-                foreach (var plugin in LoadedPlugins[e.Channel.ToLower()].Values)
-                {
-                    plugin.ExecuteCommand(e.Command, e.Arguments);
-                }
-            }
+            string serializedCommand = JsonConvert.SerializeObject(e);
+            var body = Encoding.UTF8.GetBytes(serializedCommand);
+            _pubsubChannel.BasicPublish(exchange: "",
+                                 routingKey: "FChatLib.Plugins.ToPlugins",
+                                 basicProperties: null,
+                                 body: body);
+
+            Console.WriteLine(" PluginManager Sent {0}", serializedCommand);
         }
 
         public void LoadAllAvailablePlugins()
@@ -161,7 +171,7 @@ namespace FChatLib.Entities.Plugin
             {
                 if (pluginSpawner.PluginName.ToLower() == pluginName.ToLower())
                 {
-                    var loadedPlugin = (BasePlugin)AppDomain.CurrentDomain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { Bot, channel }, System.Globalization.CultureInfo.CurrentCulture, null);
+                    var loadedPlugin = (BasePlugin)AppDomain.CurrentDomain.CreateInstanceAndUnwrap(pluginSpawner.AssemblyName, pluginSpawner.TypeName, false, BindingFlags.Default, null, new object[] { channel }, System.Globalization.CultureInfo.CurrentCulture, null);
                     return loadedPlugin;
                 }
             }

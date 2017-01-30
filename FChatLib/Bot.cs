@@ -11,6 +11,9 @@ using FChatLib.Entities.EventHandlers.WebSocket;
 using FChatLib.Entities.Plugin;
 using System.Reflection;
 using System.Security.Policy;
+using RabbitMQ.Client.Events;
+using RabbitMQ.Client;
+using FChatLib.Entities.Events;
 
 namespace FChatLib
 {
@@ -25,7 +28,6 @@ namespace FChatLib
         private bool _debug;
         private int _delayBetweenEachReconnection;
 
-        [NonSerialized]
         private WebSocket wsClient;
 
         //plugin-name is the key, event handler is the value
@@ -45,11 +47,25 @@ namespace FChatLib
             }
         }
 
+        public WebSocket WsClient
+        {
+            get
+            {
+                return wsClient;
+            }
+
+            set
+            {
+                wsClient = value;
+            }
+        }
+
         [NonSerialized]
         public PluginManager Plugins;
 
         [NonSerialized]
         public Events Events;
+        private IModel _pubsubChannel;
 
         public Bot(string username, string password, string botCharacterName, string administratorCharacterName)
         {
@@ -62,6 +78,59 @@ namespace FChatLib
             WSEventHandlers = new Dictionary<string, IWebSocketEventHandler>();
             Events = new Events();
 
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var connection = factory.CreateConnection();
+            _pubsubChannel = connection.CreateModel();
+            _pubsubChannel.QueueDeclare(queue: "FChatLib.Plugins.FromPlugins",
+                                 durable: false,
+                                 exclusive: false,
+                                 autoDelete: false,
+                                 arguments: null);
+            _pubsubChannel.QueueDeclare(queue: "FChatLib.Plugins.ToPlugins",
+                                 durable: false,
+                                 exclusive: false,
+                                 autoDelete: false,
+                                 arguments: null);
+            var consumer = new EventingBasicConsumer(_pubsubChannel);
+            consumer.Received += ReceivedCommand;
+            _pubsubChannel.BasicConsume(queue: "FChatLib.Plugins.FromPlugins",
+                                 noAck: true,
+                                 consumer: consumer);
+        }
+
+        public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)
+        {
+            _debug = debug;
+            _delayBetweenEachReconnection = delayBetweenEachReconnection;
+        }
+
+        private void ReceivedCommand(object model, BasicDeliverEventArgs e)
+        {
+            var body = Encoding.UTF8.GetString(e.Body);
+            try
+            {
+                var command = BaseEvent.Deserialize(body);
+                var commandType = command.GetType().Name;
+
+                switch (commandType)
+                {
+                    case "Message":
+                        var typedCommand = (Message)command;
+                        SendMessage(typedCommand.message, typedCommand.channel);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                return;
+            }
+            
+        }
+
+        private void InitializePluginManager()
+        {
             AppDomainSetup domaininfo = new AppDomainSetup()
             {
                 ApplicationBase = Environment.CurrentDirectory,
@@ -77,16 +146,10 @@ namespace FChatLib
                 type.FullName);
 
             var realType = typeof(PluginManager);
-            var loadedPlugin = domain.CreateInstanceAndUnwrap(realType.Assembly.FullName, realType.FullName, false, BindingFlags.Default, null, new object[] { this }, System.Globalization.CultureInfo.CurrentCulture, null);
+            var loadedPlugin = domain.CreateInstanceAndUnwrap(realType.Assembly.FullName, realType.FullName, false, BindingFlags.Default, null, new object[] { }, System.Globalization.CultureInfo.CurrentCulture, null);
 
 
-            Plugins = (PluginManager)loadedPlugin; //new PluginManager(this);
-        }
-
-        public Bot(string username, string password, string botCharacterName, string administratorCharacterName, bool debug, int delayBetweenEachReconnection) : this(username, password, botCharacterName, administratorCharacterName)
-        {
-            _debug = debug;
-            _delayBetweenEachReconnection = delayBetweenEachReconnection;
+            Plugins = (PluginManager)loadedPlugin;
         }
 
         private string GetTicket()
@@ -129,7 +192,7 @@ namespace FChatLib
                 port = 8722;
             }
 
-            wsClient = new WebSocket($"ws://chat.f-list.net:{port}");
+            WsClient = new WebSocket($"ws://chat.f-list.net:{port}");
 
             var identificationInfo = new Identification()
             {
@@ -141,14 +204,16 @@ namespace FChatLib
                 botCreator = _username
             };
 
-            WSEventHandlers.Add("FChatLib.Default", new DefaultWebSocketEventHandler(wsClient, identificationInfo, _delayBetweenEachReconnection));
+            WSEventHandlers.Add("FChatLib.Default", new DefaultWebSocketEventHandler(WsClient, identificationInfo, _delayBetweenEachReconnection));
 
-            wsClient.Connect();
+            WsClient.Connect();
+
+            InitializePluginManager();
         }
 
         public void Disconnect()
         {
-            wsClient.Close(CloseStatusCode.Normal);
+            WsClient.Close(CloseStatusCode.Normal);
         }
 
 
@@ -162,7 +227,7 @@ namespace FChatLib
 
         public void JoinChannel(string channel)
         {
-            wsClient.Send(new JoinChannel()
+            WsClient.Send(new JoinChannel()
             {
                 channel = channel
             }.ToString());
@@ -170,7 +235,7 @@ namespace FChatLib
 
         public void CreateChannel(string channelTitle)
         {
-            wsClient.Send(new CreateChannel()
+            WsClient.Send(new CreateChannel()
             {
                 channel = channelTitle
             }.ToString());
@@ -178,7 +243,7 @@ namespace FChatLib
 
         public void SendMessage(string message, string channel)
         {
-            wsClient.Send(new Message()
+            WsClient.Send(new Message()
             {
                 message = message,
                 channel = channel
@@ -205,7 +270,7 @@ namespace FChatLib
 
         public void KickUser(string character, string channel)
         {
-            wsClient.Send(new KickFromChannel()
+            WsClient.Send(new KickFromChannel()
             {
                 character = character,
                 channel = channel

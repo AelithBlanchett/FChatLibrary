@@ -1,4 +1,6 @@
-﻿namespace FChatLib
+﻿using WebSocketSharp;
+
+namespace FChatLib
 {
     public interface IBot
     {

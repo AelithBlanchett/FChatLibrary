@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.25914.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FChatLib", "FChatLib\FChatLib.csproj", "{5AE49936-2F5A-4735-9837-5719981BAEE3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FChatLib_cpo", "FChatLib\FChatLib_cpo.csproj", "{5AE49936-2F5A-4735-9837-5719981BAEE3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FChatLib_tst", "FChatLib_tst\FChatLib_tst.csproj", "{F9770DF5-F322-409B-98B9-D6E98124CBDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FChatLib_plugin", "FChatLib_exampleplugin\test\FChatLib_plugin.csproj", "{E09587EE-0587-4D81-9B6E-40B54F893362}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{F9770DF5-F322-409B-98B9-D6E98124CBDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9770DF5-F322-409B-98B9-D6E98124CBDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9770DF5-F322-409B-98B9-D6E98124CBDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E09587EE-0587-4D81-9B6E-40B54F893362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E09587EE-0587-4D81-9B6E-40B54F893362}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E09587EE-0587-4D81-9B6E-40B54F893362}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E09587EE-0587-4D81-9B6E-40B54F893362}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
